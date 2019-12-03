@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean class="com.redhat.processor.ResultProcessor"
+        id="resultProcessor" scope="singleton"/>
+    <camelContext id="context1" xmlns="http://camel.apache.org/schema/spring">
+        <onException>
+            <exception>java.lang.Exception</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <constant>500</constant>
+            </setHeader>
+            <setBody>
+                <simple>${exception.message}</simple>
+            </setBody>
+        </onException>
+        <restConfiguration apiContextPath="/openapi.json" component="servlet"/>
+        <rest enableCORS="true" id="rest1" path="/">
+            <get id="openapi.json" produces="application/json" uri="openapi.json">
+                <description>Gets the openapi document for this service</description>
+                <route id="rest1-route1">
+                    <setHeader headerName="Exchange.CONTENT_TYPE" id="setHeader-route1">
+                        <constant>application/vnd.oai.openapi+json</constant>
+                    </setHeader>
+                    <setBody id="setBody-route1">
+                        <simple>resource:classpath:openapi.json</simple>
+                    </setBody>
+                </route>
+            </get>
+        </rest>
+        <rest bindingMode="json" enableCORS="true" id="rest2">
+            <get id="get-8daf19bb-117d-4aae-ae10-60498f9fc97f" uri="/locations">
+                <to uri="direct:getalllocations"/>
+            </get>
+            <get id="get-3d121eaf-a2c5-4c4e-ac46-45e01020539b" uri="/locations/{id}">
+                <param dataType="integer" name="id" required="true" type="path"/>
+                <to uri="direct:getlocation"/>
+            </get>
+            <get id="get-1af39295-1e94-457c-b86f-db9d49498e96" uri="/location/phone/{id}">
+                <to uri="direct:rest4"/>
+            </get>
+        </rest>
+        <route id="route-50e2b459-2065-4dd0-89a9-8b0ed6b1717d">
+            <from id="from-cd5e6e64-e0ca-4cbd-85a3-8670256e609d" uri="direct:rest2"/>
+            <to id="to-c5d6d76d-7697-47c2-984e-8e773833e0f6" uri="direct:501"/>
+        </route>
+        <route id="route-758e2d1f-c465-4081-a058-4f70054ceac2">
+            <from id="from-568ccba6-5a23-4587-986d-4acbc1433a57" uri="direct:rest3"/>
+            <to id="to-a1165e52-e35b-462e-b923-88a02f657aa9" uri="direct:501"/>
+        </route>
+        <route id="route-5a0fe45f-2c10-449d-aaa2-4c0449746d35">
+            <from id="from-f84171e3-1517-4eb3-884a-4c80b5ed3f43" uri="direct:rest4"/>
+            <to id="to-e6e366c1-bf6d-4d9e-8f80-24d7bf736c8d" uri="direct:501"/>
+        </route>
+        <route id="route-getalllocations">
+            <from id="_from1" uri="direct:getalllocations"/>
+            <to id="_to1" uri="sql:select * from locations?dataSource=dataSource"/>
+            <process id="result" ref="resultProcessor"/>
+            <log id="_log2" message="output: ${body}"/>
+        </route>
+        <route id="route-getlocation">
+            <from id="getlocation_from1" uri="direct:getlocation"/>
+            <to id="getlocation_to1" uri="sql:select * from locations where id=cast(:#id as int)?dataSource=dataSource"/>
+            <process id="getlocationresult" ref="resultProcessor"/>
+            <choice id="_choice1">
+                <when id="_when1">
+                    <simple>${body.size} &gt; 0</simple>
+                    <setBody id="setBody-getlocation">
+                        <simple>${body[0]}</simple>
+                    </setBody>
+                </when>
+                <otherwise id="_otherwise1">
+                    <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="setHeader-getlocation">
+                        <constant>501</constant>
+                    </setHeader>
+                    <setBody id="setBody-getlocation">
+                        <simple>Location id not found </simple>
+                    </setBody>
+                </otherwise>
+            </choice>
+            <log id="getlocation_log2" message="output: ${body}"/>
+        </route>
+        <route id="route21">
+            <from id="from-route2" uri="direct:501"/>
+            <log id="log-route2" message="API operation not yet implemented: ${headers.CamelHttpMethod} ${headers.CamelHttpPath}"/>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE" id="setHeader-route2">
+                <constant>501</constant>
+            </setHeader>
+            <setBody id="setBody-route2">
+                <simple>API operation not implemented: ${headers.CamelHttpMethod} ${headers.CamelHttpPath}</simple>
+            </setBody>
+        </route>
+    </camelContext>
+</beans>

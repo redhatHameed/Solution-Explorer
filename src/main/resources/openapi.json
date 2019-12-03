@@ -1,0 +1,121 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Locations",
+        "description": "Locations API",
+        "version": "1.0.0"
+    },
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/locations": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/location"
+                            }
+                        },
+                        "examples": {
+                            "application/json": "[\n  {\n    \"id\": 1,\n    \"name\": \"Kamarhati\",\n    \"type\": \"Regional Branch\",\n    \"status\": \"1\",\n    \"location\": {\n      \"lat\": \"-28.32555\",\n      \"lng\": \"-5.91531\"\n    }\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Otranto\",\n    \"type\": \"Local Office\",\n    \"status\": \"1\",\n    \"location\": {\n      \"lat\": \"-8.01254\",\n      \"lng\": \"101.47364\"\n    }\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Millesimo\",\n    \"type\": \"Headquarter\",\n    \"status\": \"1\",\n    \"location\": {\n      \"lat\": \"78.88435\",\n      \"lng\": \"99.05294\"\n    }\n  }\n]"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "responses": {
+                    "201": {
+                        "description": "Successfully created",
+                        "schema": {
+                            "$ref": "#/definitions/location"
+                        }
+                    }
+                }
+            }
+        },
+        "/locations/{id}": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/location"
+                        }
+                    }
+                }
+            }
+        },
+        "/location/phone/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/location"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer",
+                    "format": "int32"
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "location": {
+            "title": "Root Type for location",
+            "description": "The root of the location type's schema.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "format": "int32",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "status": {
+                    "format": "int32",
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "object",
+                    "properties": {
+                        "lat": {
+                            "type": "string"
+                        },
+                        "lng": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "example": "{\n  \"id\": 1,\n  \"name\": \"Abdul Hameed\",\n  \"type\": \"Boston office\",\n  \"status\": \"1\",\n  \"location\": {\n    \"lat\": \"-28.32555\",\n    \"lng\": \"-5.91531\"\n  }\n}"
+        }
+    }
+}
